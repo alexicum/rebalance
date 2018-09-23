@@ -4,5 +4,23 @@
   "description": "FrontEnd-Test. UI for the terminal providing the service of refilling the balance of cellular operators.",
   "main": "index.js",
   "author": "Aleksey Shestakov (alshestakov25@gmail.com)",
-  "license": "MIT"
+  "license": "MIT",
+  "scripts": {
+    "build": "neutrino build",
+    "start": "neutrino start",
+    "lint": "neutrino lint",
+    "test": "neutrino test"
+  },
+  "dependencies": {
+    "prop-types": "^15.6.2",
+    "react": "^16.5.2",
+    "react-dom": "^16.5.2",
+    "react-hot-loader": "^4.3.11"
+  },
+  "devDependencies": {
+    "@neutrinojs/airbnb": "^8.3.0",
+    "@neutrinojs/jest": "^8.3.0",
+    "@neutrinojs/react": "^8.3.0",
+    "neutrino": "^8.3.0"
+  }
 }
