@@ -1,0 +1,8 @@
+{
+  "name": "rebalance",
+  "version": "1.0.0",
+  "description": "FrontEnd-Test. UI for the terminal providing the service of refilling the balance of cellular operators.",
+  "main": "index.js",
+  "author": "Aleksey Shestakov (alshestakov25@gmail.com)",
+  "license": "MIT"
+}
