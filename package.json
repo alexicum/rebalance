@@ -15,7 +15,8 @@
     "prop-types": "^15.6.2",
     "react": "^16.5.2",
     "react-dom": "^16.5.2",
-    "react-hot-loader": "^4.3.11"
+    "react-hot-loader": "^4.3.11",
+    "semantic-ui-react": "^0.82.5"
   },
   "devDependencies": {
     "@neutrinojs/airbnb": "^8.3.0",

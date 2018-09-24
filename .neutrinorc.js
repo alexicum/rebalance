@@ -5,6 +5,9 @@ module.exports = {
       '@neutrinojs/react',
       {
         html: {
+          links: [
+            '//cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.3.3/semantic.min.css'
+          ],
           title: 'rebalance'
         }
       }
