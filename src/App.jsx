@@ -1,6 +1,11 @@
 import { Component } from 'react';
+import {
+  BrowserRouter as Router,
+  Route,
+  // Link,
+} from 'react-router-dom';
+import { SelectOperator, RefillOperatorBalance } from './pages';
 import './App.css';
-import { SelectOperator } from './pages';
 
 export default class App extends Component {
   state = {
@@ -11,7 +16,12 @@ export default class App extends Component {
     return (
       <div className="App">
         <h1>Welcome to {this.state.name}</h1>
-        <SelectOperator />
+        <Router>
+          <div>
+            <Route exact path="/" component={SelectOperator} />
+            <Route path="/mts" component={RefillOperatorBalance} />
+          </div>
+        </Router>
       </div>
     );
   }

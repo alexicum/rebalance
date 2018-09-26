@@ -1,5 +1,4 @@
 import SelectOperator from './SelectOperator';
+import RefillOperatorBalance from './RefillOperatorBalance';
 
-const x = 1;
-
-export { SelectOperator, x };
+export { SelectOperator, RefillOperatorBalance };

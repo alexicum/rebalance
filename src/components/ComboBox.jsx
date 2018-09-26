@@ -1,42 +1,39 @@
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import { Dropdown } from 'semantic-ui-react';
 
-const options = [
-  { key: 'English', text: 'English', value: 'English' },
-  { key: 'French', text: 'French', value: 'French' },
-  { key: 'Spanish', text: 'Spanish', value: 'Spanish' },
-  { key: 'German', text: 'German', value: 'German' },
-  { key: 'Chinese', text: 'Chinese', value: 'Chinese' },
-];
-
+/**
+ * ComboBox - DropDown with the addition functionality
+ * use Dropdown props (http://react.semantic-ui.com/modules/dropdown)
+ */
 class ComboBox extends Component {
-  state = { options }
-
   handleAddition = (e, { value }) => {
-    this.setState({
-      options: [{ text: value, value }, ...this.state.options],
-    });
+    this.props.onAddItem({ value });
   }
 
-  handleChange = (e, { value }) => this.setState({ currentValue: value })
+  handleChange = (e, { value }) => this.props.onChange({ value });
 
   render() {
-    const { currentValue } = this.state;
+    const { onAddItem, onChange, ...rest } = this.props;
 
     return (
       <Dropdown
-        options={this.state.options}
-        placeholder="Выбирайте язык"
+        {...rest}
         search
         selection
         fluid
         allowAdditions
-        value={currentValue}
+        selectOnBlur={false} // avoid onChange event on click outside
         onAddItem={this.handleAddition}
         onChange={this.handleChange}
       />
     );
   }
 }
+
+ComboBox.propTypes = {
+  onAddItem: PropTypes.func.isRequired,
+  onChange: PropTypes.func.isRequired,
+};
 
 export default ComboBox;
