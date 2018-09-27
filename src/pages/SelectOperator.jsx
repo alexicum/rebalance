@@ -1,48 +1,51 @@
 import { Component } from 'react';
+import PropTypes from 'prop-types';
 import { Form } from 'semantic-ui-react';
+// import { Link } from 'react-router-dom';
 import { getOperators, addOperator } from '../api';
 
 import ComboBox from '../components/ComboBox';
 import ErrorLabel from '../components/ErrorLabel';
 import errHandling from '../utils/errorHandlingUtils';
+import stateUtils from '../utils/stateUtils';
 
 // import './App.css';
 
 export default class SelectOperator extends Component {
+  static propTypes = {
+    // match: PropTypes.object.isRequired,
+    location: PropTypes.shape({}).isRequired,
+    history: PropTypes.shape({ push: PropTypes.func.isRequired }).isRequired,
+  }
+
   state = {
-    operators: null,
+    operators: [],
     currentOperator: null,
     // eslint-disable-next-line react/no-unused-state
     uiState: {
+      loading: false,
       errors: [],
     },
   };
 
   componentDidMount() {
-    this.toggleLoading(true);
+    // eslint-disable-next-line react/no-did-mount-set-state
+    this.setState(stateUtils.toggleLoading(true));
+
     this.asyncRequest = getOperators()
       .then((operators) => {
         this.asyncRequest = null;
         this.setState({ operators });
       })
       .catch(err => errHandling.reThrowError(err, 'Operators list loading error'))
-      .catch(err => this.setState(errHandling.setFormError({ message: err.message })))
-      .finally(() => this.toggleLoading(false));
+      .catch(err => this.setState(stateUtils.setFormError({ error: err.message })))
+      .finally(() => this.setState(stateUtils.toggleLoading(false)));
   }
 
   componentWillUnmount() {
     if (this.asyncRequest) {
       this.asyncRequest.cancel();
     }
-  }
-
-  /**
-   * toggleLoading - set current loading state
-   * @param {boolean} value - true / false,
-   */
-  toggleLoading = (value = null) => {
-    const loading = (value !== null) ? value : false;
-    this.setState({ loading });
   }
 
   /**
@@ -55,35 +58,37 @@ export default class SelectOperator extends Component {
   }));
 
   handleOperatorAddition = ({ value }) => {
-    this.toggleLoading(true);
-    addOperator(value)
-      .then(() => {
+    this.setState(stateUtils.toggleLoading(true));
+    addOperator({ name: value })
+      .then(({ operator }) => {
         this.setState({
-          operators: [{ name: value }, ...this.state.operators],
-          currentOperator: value,
+          operators: [operator, ...this.state.operators],
+          currentOperator: operator,
         });
+        this.props.history.push('/recharge', { operator });
       })
       .catch(err => errHandling.reThrowError(err, `Operation Failed. Add operator "${value}"`))
-      .catch(err => this.setState(errHandling.setFormError({ message: err.message })))
-      .finally(() => this.toggleLoading(false));
+      .catch(err => this.setState(stateUtils.setFormError({ error: err.message })))
+      .finally(() => this.setState(stateUtils.toggleLoading(false)));
   }
 
   handleOperatorChange = (data) => {
+    const operator = this.state.operators.find(op => op.name === data.value);
     // do not select value before it was added to list
-    if (this.state.operators.findIndex(op => op.name === data.value) === -1) {
+    if (!operator) {
       return;
     }
-    this.setState({ currentOperator: data.value });
+    this.setState({ currentOperator: operator });
+    this.props.history.push('/recharge', { operator });
   }
 
-  handleOperatorSearchChange = () => this.setState(errHandling.clearFormError());
+  handleOperatorSearchChange = () => this.setState(stateUtils.clearFormError());
 
   render() {
-    const {
-      operators, currentOperator: value, loading,
-    } = this.state;
-
-    const error = errHandling.getFormError({ state: this.state });
+    const { operators, currentOperator } = this.state;
+    const value = currentOperator && currentOperator.name;
+    const loading = stateUtils.isLoading(this.state);
+    const error = stateUtils.getFormError(this.state);
 
     const options = this.operatorsToOptions(operators);
     return (

@@ -10,4 +10,9 @@ const addOperator = async ({ name }) => {
   return result.data;
 };
 
-export { getOperators, addOperator };
+const rechargeOperatorBalance = async (data) => {
+  const result = await requester.post(`/api/operators/${data.operator.id}`, data);
+  return result.data;
+};
+
+export { getOperators, addOperator, rechargeOperatorBalance };
