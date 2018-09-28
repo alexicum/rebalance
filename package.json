@@ -5,6 +5,7 @@
   "main": "index.js",
   "author": "Aleksey Shestakov (alshestakov25@gmail.com)",
   "license": "MIT",
+  "homepage": "https://alexicum.github.io/rebalance",
   "scripts": {
     "build": "neutrino build",
     "start": "neutrino start",
