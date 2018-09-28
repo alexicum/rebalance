@@ -11,11 +11,8 @@ const mock = new MockAdapter(axios, { delayResponse: 1000 });
  * process request for list of operators
  * reply with operators from fake DB
  */
-mock.onGet('/api/operators').reply(200, operators);
+mock.onGet('/api/operators').reply(200, { operators });
 // mock.onGet('/api/operators').networkError();
-// mock.onPost('/api/operators').reply(200);
-
-// mock.onPost('/api/operators').networkError();
 
 /**
  * process Operator addition:
@@ -23,6 +20,7 @@ mock.onGet('/api/operators').reply(200, operators);
  *   add to fake DB
  *   reply with operator or error
  */
+// mock.onPost('/api/operators').networkError();
 mock.onPost('/api/operators').reply((config) => {
   const { name } = JSON.parse(config.data);
 
@@ -53,7 +51,7 @@ mock.onPost(route('/api/operators/:id')).reply((config) => {
   const error = validations.intMin(data.amount, minAmount);
 
   if (error) {
-    return [400, {
+    return [200, {
       error: `${data.operator.name} minimal rechargeable amount: ${minAmount}`,
     }];
   }

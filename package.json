@@ -20,7 +20,8 @@
     "react-hot-loader": "^4.3.11",
     "react-router-dom": "^4.3.1",
     "react-text-mask": "^5.4.3",
-    "semantic-ui-react": "^0.82.5"
+    "semantic-ui-react": "^0.82.5",
+    "trashable-react": "^1.0.7"
   },
   "devDependencies": {
     "@neutrinojs/airbnb": "^8.3.0",

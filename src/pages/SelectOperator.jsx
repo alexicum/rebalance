@@ -1,8 +1,9 @@
 import { Component } from 'react';
 import PropTypes from 'prop-types';
+import makeComponentTrashable from 'trashable-react';
 import { Form } from 'semantic-ui-react';
 // import { Link } from 'react-router-dom';
-import { getOperators, addOperator } from '../api';
+import * as api from '../api';
 
 import ComboBox from '../components/ComboBox';
 import ErrorLabel from '../components/ErrorLabel';
@@ -11,17 +12,16 @@ import stateUtils from '../utils/stateUtils';
 
 // import './App.css';
 
-export default class SelectOperator extends Component {
+class SelectOperator extends Component {
   static propTypes = {
-    // match: PropTypes.object.isRequired,
     location: PropTypes.shape({}).isRequired,
     history: PropTypes.shape({ push: PropTypes.func.isRequired }).isRequired,
+    registerPromise: PropTypes.func.isRequired,
   }
 
   state = {
     operators: [],
     currentOperator: null,
-    // eslint-disable-next-line react/no-unused-state
     uiState: {
       loading: false,
       errors: [],
@@ -29,23 +29,20 @@ export default class SelectOperator extends Component {
   };
 
   componentDidMount() {
-    // eslint-disable-next-line react/no-did-mount-set-state
+    this.handleGetOperators();
+  }
+
+  handleGetOperators = () => {
     this.setState(stateUtils.toggleLoading(true));
 
-    this.asyncRequest = getOperators()
-      .then((operators) => {
-        this.asyncRequest = null;
-        this.setState({ operators });
-      })
+    // make Promise 'trashable': would be cancelled & nulled in componentWillUnmount
+    // Component would become GC.
+    // and this.setState will not run after unmounting
+    this.props.registerPromise(api.getOperators())
+      .then(({ operators }) => this.setState({ operators }))
       .catch(err => errHandling.reThrowError(err, 'Operators list loading error'))
       .catch(err => this.setState(stateUtils.setFormError({ error: err.message })))
       .finally(() => this.setState(stateUtils.toggleLoading(false)));
-  }
-
-  componentWillUnmount() {
-    if (this.asyncRequest) {
-      this.asyncRequest.cancel();
-    }
   }
 
   /**
@@ -59,7 +56,7 @@ export default class SelectOperator extends Component {
 
   handleOperatorAddition = ({ value }) => {
     this.setState(stateUtils.toggleLoading(true));
-    addOperator({ name: value })
+    this.props.registerPromise(api.addOperator({ name: value }))
       .then(({ operator }) => {
         this.setState({
           operators: [operator, ...this.state.operators],
@@ -67,9 +64,17 @@ export default class SelectOperator extends Component {
         });
         this.props.history.push('/recharge', { operator });
       })
+      .then(() => this.setState(stateUtils.toggleLoading(false)))
       .catch(err => errHandling.reThrowError(err, `Operation Failed. Add operator "${value}"`))
-      .catch(err => this.setState(stateUtils.setFormError({ error: err.message })))
-      .finally(() => this.setState(stateUtils.toggleLoading(false)));
+      .catch((err) => {
+        this.setState(stateUtils.setFormError({ error: err.message }));
+        this.setState(stateUtils.toggleLoading(false));
+      });
+    /* trashable-react dosen't save when using history.push + finally
+     * react still showing warning:
+     *  Can't call setState (or forceUpdate) on an unmounted component
+     */
+    // .finally(() => this.setState(stateUtils.toggleLoading(false)));
   }
 
   handleOperatorChange = (data) => {
@@ -89,7 +94,6 @@ export default class SelectOperator extends Component {
     const value = currentOperator && currentOperator.name;
     const loading = stateUtils.isLoading(this.state);
     const error = stateUtils.getFormError(this.state);
-
     const options = this.operatorsToOptions(operators);
     return (
       <Form error={!!error}>
@@ -112,3 +116,6 @@ export default class SelectOperator extends Component {
     );
   }
 }
+
+// Passes the registerPromise() function from trashable-react to Component
+export default makeComponentTrashable(SelectOperator);

@@ -13,5 +13,8 @@ module.exports = {
       }
     ],
     '@neutrinojs/jest'
-  ]
+  ],
+  options: {
+    output: 'docs',
+  }
 };

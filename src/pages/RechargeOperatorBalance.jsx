@@ -1,5 +1,6 @@
 import { Fragment, Component } from 'react';
 import PropTypes from 'prop-types';
+import makeComponentTrashable from 'trashable-react';
 import { Form, Header, Input } from 'semantic-ui-react';
 import MaskedInput from 'react-text-mask';
 import * as api from '../api';
@@ -9,7 +10,7 @@ import errHandling from '../utils/errorHandlingUtils';
 import stateUtils from '../utils/stateUtils';
 import * as validations from '../utils/validations';
 
-export default class RechargeOperatorBalance extends Component {
+class RechargeOperatorBalance extends Component {
   static propTypes = {
     location: PropTypes.shape({
       state: PropTypes.shape({
@@ -20,6 +21,7 @@ export default class RechargeOperatorBalance extends Component {
       }).isRequired,
     }).isRequired,
     history: PropTypes.shape({ push: PropTypes.func.isRequired }).isRequired,
+    registerPromise: PropTypes.func.isRequired,
   }
 
   state = {
@@ -48,8 +50,14 @@ export default class RechargeOperatorBalance extends Component {
   handleSubmit = () => {
     this.setState(stateUtils.toggleLoading(true));
     const { name } = stateUtils.getFieldValue(this.state, 'operator');
-    api.rechargeOperatorBalance(this.state.data)
+
+    this.props.registerPromise(api.rechargeOperatorBalance(this.state.data))
       .then((data) => {
+        const { error } = data;
+        if (error) {
+          this.props.history.push('/recharge/failure', { data: this.state.data, error });
+          return;
+        }
         this.props.history.push('/recharge/success', { data });
       })
       .catch(err => errHandling.reThrowError(err, `Operation Failed. Recharge ${name} balance`))
@@ -57,6 +65,7 @@ export default class RechargeOperatorBalance extends Component {
         this.setState(stateUtils.setFormError({ message: err.message }));
         this.props.history.push('/recharge/failure', { data: this.state.data, error: err.message });
       });
+    // Not needed: only when show error inside this component
     // .finally(() => this.setState(stateUtils.toggleLoading(false)));
   }
 
@@ -96,7 +105,7 @@ export default class RechargeOperatorBalance extends Component {
 
     return (
       <Fragment>
-        <Header as="h2" textAlign="center">
+        <Header as="h2">
           Recharge {operator.name} balance
         </Header>
         <Form onSubmit={this.handleSubmit}>
@@ -144,3 +153,5 @@ export default class RechargeOperatorBalance extends Component {
   }
 }
 
+// Passes the registerPromise() function from trashable-react to Component
+export default makeComponentTrashable(RechargeOperatorBalance);
