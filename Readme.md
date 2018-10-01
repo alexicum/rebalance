@@ -1,4 +1,4 @@
-###Components
+### Components
   Spent time selecting components.
 
   At first `Material-UI` were installed, but because of their complexity and lack of ComboBox took `React.Semantic-UI`.
@@ -16,7 +16,7 @@
 - react-router (HashRouter),
 - gh-pages - deploy on GitHub Pages
 
-###TODO
+### TODO
 - Tests (need to research how to integrate react-cosmos with neutrino),
 - BrowserRouter instead of HashRouter,
 - redirect to / on full refresh on not home page,
