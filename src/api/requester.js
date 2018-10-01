@@ -8,7 +8,7 @@ import * as validations from '../utils/validations';
 const mock = new MockAdapter(axios, { delayResponse: 1000 });
 
 /**
- * process request for list of operators
+ * process request for operators list
  * reply with operators from fake DB
  */
 mock.onGet('/api/operators').reply(200, { operators });
@@ -40,11 +40,20 @@ mock.onPost('/api/operators').reply((config) => {
   return [200, { operator }];
 });
 
+/**
+ * route - returns path with params (:id) replaced by regex patterns
+ * @param {string} path route with params
+ * @returns {string} transformed path
+ */
 const route = (path = '') =>
   (typeof path === 'string'
     ? new RegExp(path.replace(/:\w+/g, '[^/]+'))
     : path);
 
+/**
+ * process request to recharge operator balance
+ * reply with error or success message.
+ */
 mock.onPost(route('/api/operators/:id')).reply((config) => {
   const data = JSON.parse(config.data);
   const minAmount = 100;
@@ -56,7 +65,9 @@ mock.onPost(route('/api/operators/:id')).reply((config) => {
     }];
   }
 
-  return [200, data];
+  return [200, {
+    success: `Your account recharged with a total amount of ${data.amount} ruble(s)`,
+  }];
 });
 
 export default axios;

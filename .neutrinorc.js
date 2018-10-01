@@ -12,9 +12,10 @@ module.exports = {
         }
       }
     ],
-    '@neutrinojs/jest'
+    '@neutrinojs/jest',
+    // 'neutrino-middleware-cosmos'
   ],
   options: {
-    output: 'docs',
+    env: ['PUBLIC_URL'],
   }
 };

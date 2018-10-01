@@ -3,9 +3,8 @@ import PropTypes from 'prop-types';
 import { Message, Button } from 'semantic-ui-react';
 import { Link } from 'react-router-dom';
 
-
 const RechargeFailure = ({ location }) => {
-  const { data: { phone, amount, operator }, error } = location.state;
+  const { data: { phone, amount, operator }, message } = location.state;
   return (
     <div>
       <Message negative>
@@ -15,7 +14,7 @@ const RechargeFailure = ({ location }) => {
           Operator: {operator.name}
         </Message.Header>
         <p>
-          Error: {error}
+          Error: {message}
           <br />
           Phone: {phone}
           <br />
@@ -31,7 +30,7 @@ RechargeFailure.propTypes = {
   location: PropTypes.shape({
     state: PropTypes.shape({
       data: PropTypes.shape({}).isRequired,
-      error: PropTypes.string.isRequired,
+      message: PropTypes.string.isRequired,
     }).isRequired,
   }).isRequired,
   history: PropTypes.shape({ push: PropTypes.func.isRequired }).isRequired,

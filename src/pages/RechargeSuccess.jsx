@@ -4,11 +4,11 @@ import { Message, Button } from 'semantic-ui-react';
 import { Link } from 'react-router-dom';
 
 const RechargeSuccess = ({ location /* , history */ }) => {
-  const { phone, amount, operator } = location.state.data;
+  const { data: { phone, amount, operator }, message } = location.state;
   return (
     <div>
       <Message positive>
-        <Message.Header>{operator.name} balance successfully recharged</Message.Header>
+        <Message.Header>{operator.name}. {message}</Message.Header>
         <p>
           Phone: {phone}
           <br />
@@ -24,6 +24,7 @@ RechargeSuccess.propTypes = {
   location: PropTypes.shape({
     state: PropTypes.shape({
       data: PropTypes.shape({}).isRequired,
+      message: PropTypes.string.isRequired,
     }).isRequired,
   }).isRequired,
   history: PropTypes.shape({ push: PropTypes.func.isRequired }).isRequired,

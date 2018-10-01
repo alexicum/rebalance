@@ -1,7 +1,8 @@
 import { Component } from 'react';
 import PropTypes from 'prop-types';
 import {
-  BrowserRouter as Router,
+  // BrowserRouter as Router,
+  HashRouter as Router,
   Route,
 } from 'react-router-dom';
 import {
@@ -9,6 +10,11 @@ import {
   RechargeSuccess, RechargeFailure,
 } from './pages';
 import './App.css';
+
+const basename = process.env.NODE_ENV === 'production'
+  // ? 'https://alexicum.github.io/rebalance'
+  ? '/'
+  : '/';
 
 const RechargeRoute = ({ match }) => (
   <div>
@@ -31,7 +37,7 @@ export default class App extends Component {
     return (
       <div className="App">
         <h1>{this.state.name}</h1>
-        <Router>
+        <Router basename={basename}>
           <div>
             <Route exact path="/" component={SelectOperator} />
             <Route path="/recharge" component={RechargeRoute} />

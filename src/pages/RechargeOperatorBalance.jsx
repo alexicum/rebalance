@@ -1,7 +1,8 @@
 import { Fragment, Component } from 'react';
 import PropTypes from 'prop-types';
 import makeComponentTrashable from 'trashable-react';
-import { Form, Header, Input } from 'semantic-ui-react';
+import { Redirect } from 'react-router-dom';
+import { Form, Header, Input, Message } from 'semantic-ui-react';
 import MaskedInput from 'react-text-mask';
 import * as api from '../api';
 
@@ -10,9 +11,12 @@ import errHandling from '../utils/errorHandlingUtils';
 import stateUtils from '../utils/stateUtils';
 import * as validations from '../utils/validations';
 
+import './RechargeOperatorBalance.css';
+
 class RechargeOperatorBalance extends Component {
   static propTypes = {
     location: PropTypes.shape({
+    // data: PropTypes.shape({
       state: PropTypes.shape({
         operator: PropTypes.shape({
           id: PropTypes.number.isRequired,
@@ -20,7 +24,7 @@ class RechargeOperatorBalance extends Component {
         }).isRequired,
       }).isRequired,
     }).isRequired,
-    history: PropTypes.shape({ push: PropTypes.func.isRequired }).isRequired,
+    // history: PropTypes.shape({ push: PropTypes.func.isRequired }).isRequired,
     registerPromise: PropTypes.func.isRequired,
   }
 
@@ -28,10 +32,15 @@ class RechargeOperatorBalance extends Component {
     data: {
       operator: this.props.location.state.operator,
     },
+    actionResults: {
+      // recharge result
+      recharge: null, // { success: null, message: null },
+    },
     uiState: {
       loading: false,
       errors: [],
       touchedFields: [],
+      submitClicked: false,
     },
   };
 
@@ -48,25 +57,53 @@ class RechargeOperatorBalance extends Component {
   }
 
   handleSubmit = () => {
+    this.setState({
+      // actionResults: { recharge: null },
+      uiState: {
+        ...this.state.uiState,
+        submitClicked: true,
+      },
+    });
+
+    const fieldNames = ['phone', 'amount'];
+    let formDataIsValid = true;
+    fieldNames.forEach((field) => {
+      const value = stateUtils.getFieldValue(this.state, field);
+      const error = this.validateField({ field, value });
+      this.setState(stateUtils.setFormError({ field, error }));
+      formDataIsValid = error ? false : formDataIsValid;
+    });
+
+    if (!formDataIsValid) {
+      return;
+    }
+
+    if (this.formHasInvalidFields()) {
+      // this.setState(
+      //   stateUtils.setFormError({ error: 'Ensure that all fields are correctly filled in' }));
+      return;
+    }
     this.setState(stateUtils.toggleLoading(true));
     const { name } = stateUtils.getFieldValue(this.state, 'operator');
 
     this.props.registerPromise(api.rechargeOperatorBalance(this.state.data))
       .then((data) => {
-        const { error } = data;
-        if (error) {
-          this.props.history.push('/recharge/failure', { data: this.state.data, error });
-          return;
-        }
-        this.props.history.push('/recharge/success', { data });
+        const { error, success } = data;
+        this.setState({
+          actionResults: {
+            recharge: {
+              success: !!success,
+              message: error || success,
+            },
+          },
+        });
+        this.setState(stateUtils.toggleLoading(false));
       })
       .catch(err => errHandling.reThrowError(err, `Operation Failed. Recharge ${name} balance`))
       .catch((err) => {
-        this.setState(stateUtils.setFormError({ message: err.message }));
-        this.props.history.push('/recharge/failure', { data: this.state.data, error: err.message });
+        this.setState(stateUtils.setFormError({ error: err.message }));
+        this.setState(stateUtils.toggleLoading(false));
       });
-    // Not needed: only when show error inside this component
-    // .finally(() => this.setState(stateUtils.toggleLoading(false)));
   }
 
   validateField = ({ field, value }) => {
@@ -88,21 +125,47 @@ class RechargeOperatorBalance extends Component {
   }
 
   showFieldError = (field) => {
-    if (!stateUtils.isFieldTouched(this.state, { field })) {
-      return null;
+    const { submitClicked } = this.state.uiState;
+    if (submitClicked || stateUtils.isFieldTouched(this.state, { field })) {
+      return stateUtils.getFormError(this.state, { field });
     }
-    return stateUtils.getFormError(this.state, { field });
+    return null;
+  }
+
+  renderResult = (result) => {
+    const pathname = result.success
+      ? '/recharge/success'
+      : '/recharge/failure';
+    const data = stateUtils.getFormData(this.state);
+    return <Redirect to={{ pathname, state: { data, message: result.message } }} />;
+  }
+
+  renderOperationalErrors = () => {
+    const operationalErrors = stateUtils.getFormErrors(this.state).map(err => err.field === null);
+    // Отобразим первую ошибку
+    if (operationalErrors.length <= 0) return null;
+    return (
+      <Message
+        error
+        header="Error"
+        content={operationalErrors[0].message}
+      />
+    );
   }
 
   render() {
+    const rechargeResult = this.state.actionResults.recharge;
+    if (rechargeResult) {
+      return this.renderResult(rechargeResult);
+    }
     const operator = stateUtils.getFieldValue(this.state, 'operator');
     const loading = stateUtils.isLoading(this.state);
-
-    const errors = stateUtils.getFormErrors(this.state);
+    // const hasfieldErrors =
+    //  !!stateUtils.getFormErrors(this.state).find(err => err.field !== null);
     const phoneError = this.showFieldError('phone');
     const amountError = this.showFieldError('amount');
-    const isDisabledSubmit = errors.length > 0 || this.formHasInvalidFields();
-
+    // const isDisabledSubmit = hasfieldErrors && this.formHasInvalidFields();
+    // const isDisabledSubmit = false;
     return (
       <Fragment>
         <Header as="h2">
@@ -128,7 +191,7 @@ class RechargeOperatorBalance extends Component {
           <Form.Field error={!!amountError} required>
             {/* eslint-disable-next-line jsx-a11y/label-has-for */}
             <label htmlFor="rechargeOperator-amount">Amount</label>
-            <Input error={!!amountError}>
+            <Input error={!!amountError} className="rechargeOperator-amount">
               <MaskedInput
                 id="rechargeOperator-amount"
                 name="amount"
@@ -143,10 +206,12 @@ class RechargeOperatorBalance extends Component {
           </Form.Field>
           <Form.Button
             content="Submit"
-            disabled={isDisabledSubmit}
+            // disabled={isDisabledSubmit}
             loading={loading}
-            positive={!isDisabledSubmit}
+            // positive ={!isDisabledSubmit}
+            positive
           />
+          {this.renderOperationalErrors()}
         </Form>
       </Fragment>
     );

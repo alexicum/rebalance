@@ -1,5 +1,5 @@
 /**
- * stateUtils - functions helping in component state control:
+ * @module stateUtils - functions helping in component state control:
  *   - UI state (errors, touched controls)
  *   - fields values of the form
  * State:
@@ -15,7 +15,7 @@
  *   }
  * }
  *
- *  author: Aleksey (alshestakov25@gmail.com)
+ * @copyright Aleksey Shestakov (alshestakov25@gmail.com)
  */
 
 /**
@@ -113,7 +113,7 @@ const isFieldTouched = (state, { field }) => state.uiState.touchedFields.include
 
 /**
  * setFieldValue - save the field value to state
- * @param {Object} options = {field {String}: field name, value {String}: field value}
+ * @param {Object} options = {field {String}: field name, value {String|Object}: field value}
  * @returns {function} function, that should be used as param to this.setState();
  *
  * TODO: return null if the same field value already in state
@@ -131,6 +131,12 @@ const setFieldValue = ({ field, value }) => state => ({
  * @param {*} field
  */
 const getFieldValue = (state, field) => state.data[field];
+
+/**
+ * getFormData - get all form data (all fields)
+ * @param {Object} state
+ */
+const getFormData = state => state.data;
 
 /**
  * toggleLoading - set current loading state
@@ -158,7 +164,7 @@ export default {
   // Field values
   setFieldValue,
   getFieldValue,
-
+  getFormData,
   // uiState methods:
 
   // Error utils

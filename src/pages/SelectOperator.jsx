@@ -1,8 +1,8 @@
 import { Component } from 'react';
 import PropTypes from 'prop-types';
 import makeComponentTrashable from 'trashable-react';
+import { Redirect } from 'react-router-dom';
 import { Form } from 'semantic-ui-react';
-// import { Link } from 'react-router-dom';
 import * as api from '../api';
 
 import ComboBox from '../components/ComboBox';
@@ -62,19 +62,19 @@ class SelectOperator extends Component {
           operators: [operator, ...this.state.operators],
           currentOperator: operator,
         });
-        this.props.history.push('/recharge', { operator });
+        // this.props.history.push('/recharge', { operator });
       })
       .then(() => this.setState(stateUtils.toggleLoading(false)))
       .catch(err => errHandling.reThrowError(err, `Operation Failed. Add operator "${value}"`))
       .catch((err) => {
         this.setState(stateUtils.setFormError({ error: err.message }));
-        this.setState(stateUtils.toggleLoading(false));
-      });
-    /* trashable-react dosen't save when using history.push + finally
-     * react still showing warning:
-     *  Can't call setState (or forceUpdate) on an unmounted component
-     */
-    // .finally(() => this.setState(stateUtils.toggleLoading(false)));
+        // this.setState(stateUtils.toggleLoading(false));
+      })
+      /* trashable-react dosen't save when using history.push + finally
+      * react still showing warning:
+      *  Can't call setState (or forceUpdate) on an unmounted component
+      */
+      .finally(() => this.setState(stateUtils.toggleLoading(false)));
   }
 
   handleOperatorChange = (data) => {
@@ -84,17 +84,31 @@ class SelectOperator extends Component {
       return;
     }
     this.setState({ currentOperator: operator });
-    this.props.history.push('/recharge', { operator });
+    // this.props.history.push('/recharge', { operator });
   }
 
   handleOperatorSearchChange = () => this.setState(stateUtils.clearFormError());
 
   render() {
     const { operators, currentOperator } = this.state;
+
+    if (currentOperator) {
+      return (
+        <Redirect
+          push
+          to={{
+            pathname: '/recharge',
+            state: { operator: currentOperator },
+          }}
+        />
+      );
+    }
+
     const value = currentOperator && currentOperator.name;
     const loading = stateUtils.isLoading(this.state);
     const error = stateUtils.getFormError(this.state);
     const options = this.operatorsToOptions(operators);
+
     return (
       <Form error={!!error}>
         <Form.Field error={!!error}>
