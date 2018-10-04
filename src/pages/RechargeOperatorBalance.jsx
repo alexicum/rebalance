@@ -16,7 +16,6 @@ import './RechargeOperatorBalance.css';
 class RechargeOperatorBalance extends Component {
   static propTypes = {
     location: PropTypes.shape({
-    // data: PropTypes.shape({
       state: PropTypes.shape({
         operator: PropTypes.shape({
           id: PropTypes.number.isRequired,
@@ -24,7 +23,6 @@ class RechargeOperatorBalance extends Component {
         }).isRequired,
       }).isRequired,
     }).isRequired,
-    // history: PropTypes.shape({ push: PropTypes.func.isRequired }).isRequired,
     registerPromise: PropTypes.func.isRequired,
   }
 
@@ -58,7 +56,6 @@ class RechargeOperatorBalance extends Component {
 
   handleSubmit = () => {
     this.setState({
-      // actionResults: { recharge: null },
       uiState: {
         ...this.state.uiState,
         submitClicked: true,
@@ -66,23 +63,21 @@ class RechargeOperatorBalance extends Component {
     });
 
     const fieldNames = ['phone', 'amount'];
-    let formDataIsValid = true;
-    fieldNames.forEach((field) => {
-      const value = stateUtils.getFieldValue(this.state, field);
-      const error = this.validateField({ field, value });
-      this.setState(stateUtils.setFormError({ field, error }));
-      formDataIsValid = error ? false : formDataIsValid;
-    });
+    const formDataIsValid = fieldNames.reduce(
+      (isValid, field) => {
+        const value = stateUtils.getFieldValue(this.state, field);
+        const error = this.validateField({ field, value });
+        // update field error state
+        this.setState(stateUtils.setFormError({ field, error }));
+        return error ? false : isValid;
+      },
+      true /* initial value for isValid */,
+    );
 
     if (!formDataIsValid) {
       return;
     }
 
-    if (this.formHasInvalidFields()) {
-      // this.setState(
-      //   stateUtils.setFormError({ error: 'Ensure that all fields are correctly filled in' }));
-      return;
-    }
     this.setState(stateUtils.toggleLoading(true));
     const { name } = stateUtils.getFieldValue(this.state, 'operator');
 
@@ -101,6 +96,7 @@ class RechargeOperatorBalance extends Component {
       })
       .catch(err => errHandling.reThrowError(err, `Operation Failed. Recharge ${name} balance`))
       .catch((err) => {
+        // TODO: convert to setOperationalError
         this.setState(stateUtils.setFormError({ error: err.message }));
         this.setState(stateUtils.toggleLoading(false));
       });
@@ -115,13 +111,6 @@ class RechargeOperatorBalance extends Component {
       default:
         throw new ReferenceError(`RechargeOperatorBalance.validateField(). Unknown field name: "${field}"`);
     }
-  }
-
-  formHasInvalidFields = () => {
-    const phone = stateUtils.getFieldValue(this.state, 'phone');
-    const amount = stateUtils.getFieldValue(this.state, 'amount');
-    return !!this.validateField({ field: 'phone', value: phone }) ||
-      !!this.validateField({ field: 'amount', value: amount });
   }
 
   showFieldError = (field) => {
@@ -141,6 +130,7 @@ class RechargeOperatorBalance extends Component {
   }
 
   renderOperationalErrors = () => {
+    // TODO: convert to getOperationalErrors
     const operationalErrors = stateUtils.getFormErrors(this.state).map(err => err.field === null);
     // Отобразим первую ошибку
     if (operationalErrors.length <= 0) return null;
@@ -155,17 +145,16 @@ class RechargeOperatorBalance extends Component {
 
   render() {
     const rechargeResult = this.state.actionResults.recharge;
+
     if (rechargeResult) {
       return this.renderResult(rechargeResult);
     }
+
     const operator = stateUtils.getFieldValue(this.state, 'operator');
     const loading = stateUtils.isLoading(this.state);
-    // const hasfieldErrors =
-    //  !!stateUtils.getFormErrors(this.state).find(err => err.field !== null);
     const phoneError = this.showFieldError('phone');
     const amountError = this.showFieldError('amount');
-    // const isDisabledSubmit = hasfieldErrors && this.formHasInvalidFields();
-    // const isDisabledSubmit = false;
+
     return (
       <Fragment>
         <Header as="h2">

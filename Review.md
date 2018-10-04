@@ -1,19 +1,19 @@
-## Первый шаг:
+## First round:
 
-1. Добавить описание:
-  - описание функции;
-  - входные и выходные параметры.
-1. Подключить ESLint + airbnb, настроенный на Style Guide компании и/или текущего проекта/библиотеки:
-  - автоматическая проверка форматирования и стиля до review.
-1. Переименовать ф-ю в соответствии с Naming convention (Style Guide) компании: как минимум, чтобы название отражало функционал.
-1. Рекомендовать проверить результат на соответствие описанию, чтобы исключить логические ошибки.
+1. Add description:
+  * function description;
+  * input and result params description.
+1. Setup ESLint + airbnb, turned to company/project Style Guide:
+  * it whould allow automatic format and style check before review.
+1. use company Naming convention (Style Guide) for function naming.
+1. give recommendation to author to check result with description: to exclude logical errors.
 
-Вернуть автору.
+Return code to author.
 
-## Второй шаг и т.д.:
+## Second and next rounds:
 
-1. Проверить и указать на логические ошибки (есть вероятность, что автор их сам обнаружит после первого шага)
-1. Дать рекомендации по рефакторингу.
+1. Point to logical errors ()
+1. point on available refactoring methods.
 
 ```
 /**
